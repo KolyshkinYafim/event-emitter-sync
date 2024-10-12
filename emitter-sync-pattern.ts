@@ -62,28 +62,25 @@ class EventHandler extends EventStatistics<EventName> {
   // Feel free to edit this class
 
   repository: EventRepository;
+  subscriptions: EventName[];
 
   constructor(emitter: EventEmitter<EventName>, repository: EventRepository) {
     super();
     this.repository = repository;
+    this.subscriptions = [EventName.EventA, EventName.EventB];
 
-    emitter.subscribe(EventName.EventA, () =>
-      this.repository.saveEventData(EventName.EventA, 1)
-    );
+    this.subscriptions.map(event => {
+      emitter.subscribe(event, () => {
+        this.setStats(event, this.getStats(event) + 1);
+        this.repository.setStats(event, this.repository.getStats(event) + 1);
+      })
+    })
   }
 }
 
+
 class EventRepository extends EventDelayedRepository<EventName> {
   // Feel free to edit this class
-
-  async saveEventData(eventName: EventName, _: number) {
-    try {
-      await this.updateEventStatsBy(eventName, 1);
-    } catch (e) {
-      // const _error = e as EventRepositoryError;
-      // console.warn(error);
-    }
-  }
 }
 
 init();
